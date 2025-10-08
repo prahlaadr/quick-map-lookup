@@ -1,14 +1,15 @@
-# Address Proximity Finder
+# Quick Map Lookup
 
-Find the closest location to your starting address based on driving distance using Google Maps Distance Matrix API.
+A web application that finds the closest address to your starting location based on actual driving distance using the Google Maps Distance Matrix API.
 
 ## Features
 
-- 🎯 Find the closest address from up to 20 destination addresses
-- 🚗 Uses real driving distance and time (not straight-line)
-- 📊 Results sorted by proximity with detailed distance and time info
-- 🎨 Clean, modern UI with responsive design
-- ⚡ Built with Next.js 14 and TypeScript
+- Compare up to 20 destination addresses against a starting location
+- Uses real driving distance and time calculations (not straight-line distance)
+- Results automatically sorted by proximity
+- Smart address parsing that handles both formatted lists and text blocks
+- Displays distance in miles and estimated driving time
+- Built with Next.js 14 and TypeScript
 
 ## Setup
 
@@ -48,25 +49,12 @@ Find the closest location to your starting address based on driving distance usi
 
 ## Usage
 
-1. Enter your starting address in the first input field
-2. Enter destination addresses in the textarea (one per line, max 20)
+1. Enter your starting address
+2. Paste destination addresses (one per line or extract from text blocks)
 3. Click "Find Closest Location"
-4. View results sorted by driving distance with the closest location highlighted
+4. View results sorted by driving distance
 
-### Example Input
-
-**Starting Address:**
-```
-1600 Amphitheatre Parkway, Mountain View, CA
-```
-
-**Destination Addresses:**
-```
-1 Apple Park Way, Cupertino, CA
-1 Infinite Loop, Cupertino, CA
-410 Terry Ave N, Seattle, WA
-1 Microsoft Way, Redmond, WA
-```
+The application automatically detects addresses from plain text, so you can paste content from emails or documents without manual formatting.
 
 ## Deployment to Vercel
 
@@ -92,27 +80,23 @@ Find the closest location to your starting address based on driving distance usi
 - Example: 20 addresses = $0.10 per query
 - Monthly free tier: ~40,000 queries/month covered by Google's $200 credit
 
-## Tech Stack
+## Technical Details
 
-- **Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **API Client:** @googlemaps/google-maps-services-js
-- **Deployment:** Vercel
+Built with Next.js 14, TypeScript, and Tailwind CSS. Uses the Google Maps Distance Matrix API through serverless API routes to calculate driving distances and times.
 
 ## Project Structure
 
 ```
-address-finder/
 ├── app/
 │   ├── page.tsx              # Main UI component
 │   ├── layout.tsx            # Root layout
 │   └── api/
 │       └── find-closest/
-│           └── route.ts      # API endpoint for distance calculation
-├── .env.local                # Environment variables (not in git)
-├── .env.example              # Environment variables template
-└── README.md
+│           └── route.ts      # Distance calculation API endpoint
+├── lib/
+│   └── addressParser.ts      # Smart address extraction utility
+├── .env.local                # Environment variables (gitignored)
+└── .env.example              # Environment variable template
 ```
 
 ## License
