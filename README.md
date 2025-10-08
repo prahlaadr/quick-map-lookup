@@ -99,23 +99,6 @@ React component (`app/page.tsx`) manages:
 - Results rendering with conditional styling
 - Error message display
 
-## Deployment to Vercel
-
-1. Install Vercel CLI:
-   ```bash
-   npm i -g vercel
-   ```
-
-2. Deploy:
-   ```bash
-   vercel
-   ```
-
-3. Add your `GOOGLE_MAPS_API_KEY` environment variable in the Vercel dashboard:
-   - Go to your project settings
-   - Navigate to "Environment Variables"
-   - Add `GOOGLE_MAPS_API_KEY` with your API key
-
 ## Limitations and Considerations
 
 ### API Costs
