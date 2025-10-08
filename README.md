@@ -1,15 +1,28 @@
 # Quick Map Lookup
 
-A web application that finds the closest address to your starting location based on actual driving distance using the Google Maps Distance Matrix API.
+Live demo: https://quick-map-lookup.vercel.app
 
-## Features
+A web application that calculates driving distances from a starting point to multiple destinations using the Google Maps Distance Matrix API, then ranks them by proximity.
 
-- Compare up to 20 destination addresses against a starting location
-- Uses real driving distance and time calculations (not straight-line distance)
-- Results automatically sorted by proximity
-- Smart address parsing that handles both formatted lists and text blocks
-- Displays distance in miles and estimated driving time
-- Built with Next.js 14 and TypeScript
+## Overview
+
+This application solves the problem of determining which location from a list is closest by driving distance rather than straight-line distance. It handles up to 20 destination addresses and supports flexible input formats through regex-based address parsing.
+
+## Technical Implementation
+
+### Core Technologies
+- Next.js 14 (App Router with React Server Components)
+- TypeScript for type safety
+- Tailwind CSS for styling
+- Google Maps Distance Matrix API
+- Serverless API routes for backend logic
+
+### Key Features
+- Driving distance calculations using real road networks
+- Imperial units (miles) for distance measurements
+- Regex-based address parser supporting multiple input formats
+- Client-side validation and real-time address counting
+- Serverless architecture (no persistent state)
 
 ## Setup
 
@@ -47,14 +60,44 @@ A web application that finds the closest address to your starting location based
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Usage
+## How It Works
 
-1. Enter your starting address
-2. Paste destination addresses (one per line or extract from text blocks)
-3. Click "Find Closest Location"
-4. View results sorted by driving distance
+### Address Parsing Algorithm
+The application uses a two-strategy parsing system implemented in `lib/addressParser.ts`:
 
-The application automatically detects addresses from plain text, so you can paste content from emails or documents without manual formatting.
+1. **Line-by-line detection**: If 70% or more lines match address patterns (street number + street suffix + optional city/state), treats input as a simple list
+2. **Regex extraction**: For text blocks, uses pattern matching to extract addresses:
+   - Matches US street suffixes (St, Ave, Rd, Blvd, etc.)
+   - Identifies state names and abbreviations
+   - Captures street numbers and names
+   - Filters results by minimum length to reduce false positives
+
+Pattern matching supports:
+- Full addresses: `123 Main Street, Springfield, IL 62701`
+- Partial addresses: `456 Oak Ave, Chicago`
+- Mixed formats within the same input
+
+### Distance Calculation
+Backend API route (`app/api/find-closest/route.ts`) handles:
+- Input validation (max 20 addresses)
+- Google Maps Distance Matrix API integration
+- Unit conversion to imperial (miles)
+- Sorting by distance value (meters internally)
+- Error handling for invalid addresses
+
+API returns:
+- Valid results sorted by proximity
+- Failed lookups with status codes
+- Distance in human-readable format (e.g., "2.3 mi")
+- Estimated driving time
+
+### Frontend Architecture
+React component (`app/page.tsx`) manages:
+- Form state and user input
+- Real-time address counting using the parser
+- API communication via fetch
+- Results rendering with conditional styling
+- Error message display
 
 ## Deployment to Vercel
 
@@ -73,31 +116,68 @@ The application automatically detects addresses from plain text, so you can past
    - Navigate to "Environment Variables"
    - Add `GOOGLE_MAPS_API_KEY` with your API key
 
-## API Costs
+## Limitations and Considerations
 
-- Google Maps Distance Matrix API: $5 per 1,000 elements (after $200/month free credit)
-- Each query: 1 starting address × N destination addresses = N elements
-- Example: 20 addresses = $0.10 per query
-- Monthly free tier: ~40,000 queries/month covered by Google's $200 credit
+### API Costs
+- Google Maps Distance Matrix API pricing: $5 per 1,000 elements after free tier
+- Each query consumes N elements (N = number of destination addresses)
+- Example: 20 addresses costs $0.10 per query
+- Google provides $200/month credit (~40,000 distance calculations)
 
-## Technical Details
+### Known Limitations
+1. **Address Parser Accuracy**
+   - US addresses only (state names and abbreviations hardcoded)
+   - May produce false positives on street-like patterns
+   - Requires at least street number + suffix for reliable detection
+   - Complex international addresses not supported
 
-Built with Next.js 14, TypeScript, and Tailwind CSS. Uses the Google Maps Distance Matrix API through serverless API routes to calculate driving distances and times.
+2. **API Constraints**
+   - Maximum 20 destination addresses per query (UI enforced)
+   - Google Maps API rate limits apply
+   - Requires valid, geocodable addresses
+   - Network latency affects response time
+
+3. **Application Scope**
+   - Single query at a time (no batch processing)
+   - No address validation before API call
+   - No caching of previous queries
+   - Stateless (no user accounts or history)
 
 ## Project Structure
 
 ```
 ├── app/
-│   ├── page.tsx              # Main UI component
-│   ├── layout.tsx            # Root layout
+│   ├── page.tsx              # Client component: form, state, results display
+│   ├── layout.tsx            # Root layout with metadata
 │   └── api/
 │       └── find-closest/
-│           └── route.ts      # Distance calculation API endpoint
+│           └── route.ts      # POST endpoint for distance calculations
 ├── lib/
-│   └── addressParser.ts      # Smart address extraction utility
-├── .env.local                # Environment variables (gitignored)
-└── .env.example              # Environment variable template
+│   └── addressParser.ts      # Regex-based address extraction logic
+├── .env.local                # API key storage (gitignored)
+├── .env.example              # Template for environment variables
+└── tailwind.config.ts        # Tailwind configuration
 ```
+
+### Key Files
+
+**`lib/addressParser.ts`**
+- Exports `parseAddresses(input: string): string[]`
+- Contains US_STATES array and STREET_SUFFIXES array
+- Implements two regex patterns for flexible address matching
+- Returns deduplicated array of detected addresses
+
+**`app/api/find-closest/route.ts`**
+- POST handler accepting `{ startingAddress: string, addresses: string[] }`
+- Validates input length and format
+- Calls Google Maps API with imperial units
+- Returns sorted results with distance/duration objects
+
+**`app/page.tsx`**
+- React functional component with form state
+- Real-time address counting
+- Conditional rendering for results and errors
+- Tailwind-based responsive layout
 
 ## License
 
